@@ -2,7 +2,6 @@ import express from "express";
 import bodyParser from "body-parser";
 import { MobTimer } from './mobTimer';
 const app = express()
-const port = 3000
 const mobTimer = new MobTimer();
 app.use(bodyParser.urlencoded({
   extended: true
@@ -37,6 +36,5 @@ app.get('/resume', (req, res) => {
   res.send(mobTimer.state);
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+
+export default app;
