@@ -1,14 +1,11 @@
 import express from "express";
-import bodyParser from "body-parser";
 import { MobTimer } from './mobTimer';
 
 export function makeApp() {
   const app = express()
   const mobTimer = new MobTimer();
-  app.use(bodyParser.urlencoded({
-    extended: true
-  }));
-  app.use(bodyParser.json());
+  app.use(express.urlencoded());
+  app.use(express.json());
 
 
   app.get('/', (req, res) => {
