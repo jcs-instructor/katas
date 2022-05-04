@@ -13,13 +13,13 @@ test('Set duration to 3.5 minutes', () => {
 
 test('Initial state - timer is not running', () => {
   const mobTimer = new MobTimer();
-  expect(mobTimer.state).toEqual(Status.Ready);
+  expect(mobTimer.status).toEqual(Status.Ready);
 });
 
 test('Start timer', () => {
   const mobTimer = new MobTimer();
   mobTimer.start();
-  expect(mobTimer.state).toEqual(Status.Running);
+  expect(mobTimer.status).toEqual(Status.Running);
 });
 
 test('Get seconds remaining before start for turn duration with single digit minutes', () => {
@@ -75,7 +75,7 @@ test('Pause timer', () => {
   const mobTimer = new MobTimer();
   mobTimer.start();
   mobTimer.pause();
-  expect(mobTimer.state).toEqual(Status.Paused);
+  expect(mobTimer.status).toEqual(Status.Paused);
 });
 
 test('Get seconds remaining after 1 second pause', () => {
