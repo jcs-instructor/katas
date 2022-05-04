@@ -1,4 +1,4 @@
-import { MobTimer, State } from './mobTimer'
+import { MobTimer, Status } from './mobTimer'
 import { MockCurrentTime } from './mockCurrentTime'
 
 test('Default duration is 5 minutes', () => {
@@ -12,62 +12,62 @@ test('Set duration to 3.5 minutes', () => {
 });
 
 test('Initial state - timer is not running', () => {
-  const mobTimer = new MobTimer();  
-  expect(mobTimer.state).toEqual(State.Ready);
+  const mobTimer = new MobTimer();
+  expect(mobTimer.state).toEqual(Status.Ready);
 });
 
 test('Start timer', () => {
   const mobTimer = new MobTimer();
   mobTimer.start();
-  expect(mobTimer.state).toEqual(State.Running);
+  expect(mobTimer.state).toEqual(Status.Running);
 });
 
 test('Get seconds remaining before start for turn duration with single digit minutes', () => {
   const mobTimer = new MobTimer();
   mobTimer.durationMinutes = 6;
-  expect(mobTimer.secondsRemainingString).toEqual("00:00");  
+  expect(mobTimer.secondsRemainingString).toEqual("00:00");
 });
 
 test('Get seconds remaining string after start for turn duration with fractional minutes', () => {
   const mobTimer = new MobTimer();
   mobTimer.durationMinutes = 5.5;
   mobTimer.start();
-  expect(mobTimer.secondsRemainingString).toEqual("05:30");  
+  expect(mobTimer.secondsRemainingString).toEqual("05:30");
 });
 
 test('Get seconds remaining string after start for turn duration with double digit minutes', () => {
   const mobTimer = new MobTimer();
   mobTimer.durationMinutes = 12;
   mobTimer.start();
-  expect(mobTimer.secondsRemainingString).toEqual("12:00");  
+  expect(mobTimer.secondsRemainingString).toEqual("12:00");
 });
 
 test('Get seconds remaining 1 second after start', () => {
   const mobTimer = new MobTimer();
   const mockCurrentTime = createMockCurrentTime(mobTimer);
-  mobTimer.durationMinutes = 6; 
+  mobTimer.durationMinutes = 6;
   mobTimer.start();
-  expect(mobTimer.secondsRemaining).toEqual(6*60);
-  mockCurrentTime.delaySeconds(1); 
-  expect(mobTimer.secondsRemaining).toEqual(6*60 - 1);
+  expect(mobTimer.secondsRemaining).toEqual(6 * 60);
+  mockCurrentTime.delaySeconds(1);
+  expect(mobTimer.secondsRemaining).toEqual(6 * 60 - 1);
 });
 
 test('Get time remaining string 1 second after start', () => {
   const mobTimer = new MobTimer();
   const mockCurrentTime = createMockCurrentTime(mobTimer);
-  mobTimer.durationMinutes = 6; 
+  mobTimer.durationMinutes = 6;
   mobTimer.start();
-  mockCurrentTime.delaySeconds(1); 
+  mockCurrentTime.delaySeconds(1);
   expect(mobTimer.secondsRemainingString).toEqual("05:59");
 });
 
 test('Get seconds remaining 1 second after start (real)', async () => {
   const mobTimer = new MobTimer();
-  mobTimer.durationMinutes = 6; 
+  mobTimer.durationMinutes = 6;
   mobTimer.start();
-  expect(mobTimer.secondsRemaining).toEqual(6*60);
-  await delaySeconds(1); 
-  expect(mobTimer.secondsRemaining).toEqual(6*60 - 1);
+  expect(mobTimer.secondsRemaining).toEqual(6 * 60);
+  await delaySeconds(1);
+  expect(mobTimer.secondsRemaining).toEqual(6 * 60 - 1);
 });
 
 
@@ -75,7 +75,7 @@ test('Pause timer', () => {
   const mobTimer = new MobTimer();
   mobTimer.start();
   mobTimer.pause();
-  expect(mobTimer.state).toEqual(State.Paused);
+  expect(mobTimer.state).toEqual(Status.Paused);
 });
 
 test('Get seconds remaining after 1 second pause', () => {
@@ -84,7 +84,7 @@ test('Get seconds remaining after 1 second pause', () => {
   mobTimer.durationMinutes = 6;
   mobTimer.start();
   mobTimer.pause();
-  mockCurrentTime.delaySeconds(1); 
+  mockCurrentTime.delaySeconds(1);
   expect(mobTimer.secondsRemainingString).toEqual("06:00");
 });
 
@@ -93,9 +93,9 @@ test('Get seconds remaining after running 1 second and paused 1', () => {
   const mockCurrentTime = createMockCurrentTime(mobTimer);
   mobTimer.durationMinutes = 6;
   mobTimer.start();
-  mockCurrentTime.delaySeconds(1); 
+  mockCurrentTime.delaySeconds(1);
   mobTimer.pause();
-  mockCurrentTime.delaySeconds(2); 
+  mockCurrentTime.delaySeconds(2);
   expect(mobTimer.secondsRemainingString).toEqual("05:59");
 });
 
@@ -104,11 +104,11 @@ test('Get seconds remaining after running 1 second, paused 1 second, and resume 
   const mockCurrentTime = createMockCurrentTime(mobTimer);
   mobTimer.durationMinutes = 6;
   mobTimer.start();
-  mockCurrentTime.delaySeconds(1); 
+  mockCurrentTime.delaySeconds(1);
   mobTimer.pause();
-  mockCurrentTime.delaySeconds(2); 
+  mockCurrentTime.delaySeconds(2);
   mobTimer.resume();
-  mockCurrentTime.delaySeconds(3); 
+  mockCurrentTime.delaySeconds(3);
   expect(mobTimer.secondsRemainingString).toEqual("05:56");
 });
 
@@ -119,7 +119,7 @@ function createMockCurrentTime(mobTimer: MobTimer) {
 }
 
 function delaySeconds(seconds: number) {
-  return new Promise( resolve => setTimeout(resolve, seconds*1000) );
+  return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
 // todo: add test to pause, resume, and pause again
 
