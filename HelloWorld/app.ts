@@ -2,7 +2,6 @@ import express from "express";
 import bodyParser from "body-parser";
 import { MobTimer } from './mobTimer';
 
-const app = makeApp();
 export function makeApp() {
   const app = express()
   const mobTimer = new MobTimer();
@@ -41,6 +40,3 @@ export function makeApp() {
 
   return app;
 };
-
-
-export default app;
