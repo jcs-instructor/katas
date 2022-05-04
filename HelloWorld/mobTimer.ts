@@ -12,7 +12,7 @@ export class MobTimer {
 
   private _durationMinutes = 5;
   private _whenStartedInSeconds: number;
-  private _status: Status = Status.Ready;
+  private _status = Status.Ready;
   private _whenPausedInSeconds: number;
   private _nowInSecondsFunc = TimeUtil.getNowInSeconds;
   private _previouslyAccumulatedElapsedSeconds = 0;

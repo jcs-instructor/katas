@@ -7,6 +7,13 @@ test("Testing post duration works", async () => {
     expect(resp.body.durationMinutes).toEqual(32);
 });
 
+test("Testing post without duration, duration stays the same", async () => {
+    const agent = request(makeApp());
+    await agent.post('/').send({ durationMinutes: 32 });
+    const resp = await agent.post('/').send({});
+    expect(resp.body.durationMinutes).toEqual(32);
+});
+
 test("Test start", async () => {
     const agent = request(makeApp());
     const resp = await agent.get('/start');

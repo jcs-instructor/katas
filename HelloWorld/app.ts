@@ -12,9 +12,7 @@ export function makeApp() {
 
   app.post('/', (req, res) => {
     const data = req.body;
-    mobTimer.durationMinutes = Number(data.durationMinutes);
-
-    // mobTimer.durationMinutes = data.durationMinutes || mobTimer.durationMinutes;
+    mobTimer.durationMinutes = Number(data.durationMinutes || mobTimer.durationMinutes);
     res.send(mobTimer.state);
   });
 

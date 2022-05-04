@@ -1,1 +1,1 @@
-curl -d "duration=3.5" -X POST http://localhost:3000
+curl -d "durationMinutes=3.5" -X POST http://localhost:3000
