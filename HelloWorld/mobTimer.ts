@@ -37,7 +37,7 @@ export class MobTimer {
       status: this.status,
       remainingString: this.secondsRemainingString,
       secondsRemaining: this.secondsRemaining,
-      duration: this.durationMinutes,
+      durationMinutes: this.durationMinutes,
     }
 
   }
