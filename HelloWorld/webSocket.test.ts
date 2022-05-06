@@ -12,29 +12,34 @@ class MockServer {
 }
 
 class MobServer {
-    mob(mobName: string) {
-        const mob = this.sockets.filter(elem =>
-            elem.mobName === "arrested-egg"
-        );
-        console.log(mob);
-        return mob;
-    }
 
-    private _sockets = [];
+
+
+    public _mobs = new Map();
+    private _sockets = new Map();
+
+    mob(mobName: string) {
+        const retValue = this._mobs.get("arrested-egg");
+        console.log('debug 5', this._mobs, "xxx", retValue);
+        return retValue;
+    }
 
     static configure = (server: WS): MobServer => {
         const mobServer = new MobServer();
-        server.on("connection", () => mobServer.sockets.push({ mobName: "arrested-egg" }));
+        // server.on("connection", (conn) => mobServer.mobs.set(conn, { mobName: "arrested-egg" }));
+        server.on("connection", (conn) => mobServer.mobs.set("arrested-egg", [conn]));
+        server.on("connection", (conn) => mobServer.sockets.set(conn, { mobName: "arrested-egg" }));
         return mobServer;
     }
 
+    public get mobs() { return this._mobs };
     public get sockets() { return this._sockets };
 }
 
 test("New mob server has zero websockets connected", async () => {
     const mockServer = new MockServer(wssUrl);
     const configuredServer = MobServer.configure(mockServer.server);
-    expect(configuredServer.sockets.length).toEqual(0);
+    expect(configuredServer.sockets.size).toEqual(0);
     mockServer.server.close();
 });
 
@@ -45,7 +50,7 @@ test("New mob server has one websocket connected", async () => {
     new WebSocket(wssUrl);
     await mockServer.server.connected;
     mockServer.server.close();
-    expect(configuredServer.sockets.length).toEqual(1);
+    expect(configuredServer.sockets.size).toEqual(1);
 });
 
 test("Joining a mob", async () => {
@@ -54,7 +59,7 @@ test("Joining a mob", async () => {
     const client1 = new WebSocket(wssUrl);
     await mockServer.server.connected;
     client1.send(JSON.stringify({ action: "join", mob: "arrested-egg" }));
-    console.log("debug", configuredServer.sockets);
+    console.log("debug4", configuredServer.mobs);
     mockServer.server.close();
     expect(configuredServer.mob("arrested-egg").length).toEqual(1);
 });
