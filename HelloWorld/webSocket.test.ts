@@ -1,15 +1,8 @@
 import WS from 'jest-websocket-mock';
+import { MockServer } from './MockServer';
 const wssUrl = "wss://localhost:1234";
 
-class MockServer {
-    private _server: WS;
-    constructor(wssUrl) {
-        this._server = new WS(wssUrl);
-    }
-    public get server() {
-        return this._server;
-    };
-}
+
 
 class MobServer {
 
