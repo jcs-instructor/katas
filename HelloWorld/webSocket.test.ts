@@ -1,12 +1,10 @@
 import WS from 'jest-websocket-mock';
-import { MockServer } from './MockServer';
 import { MobServer } from './MobServer';
 const wssUrl = "wss://localhost:1234";
 
 
 
 test("New mob server has zero websockets connected", async () => {
-    // const mockServer = new MockServer(wssUrl);
     const mockSocketServer = new WS(wssUrl);
     const configuredServer = MobServer.configure(mockSocketServer);
     expect(configuredServer.sockets.size).toEqual(0);
@@ -15,21 +13,21 @@ test("New mob server has zero websockets connected", async () => {
 
 
 test("New mob server has one websocket connected", async () => {
-    const mockServer = new MockServer(wssUrl);
-    const configuredServer = MobServer.configure(mockServer.server);
+    const mockServer = new WS(wssUrl);
+    const configuredServer = MobServer.configure(mockServer);
     new WebSocket(wssUrl);
-    await mockServer.server.connected;
-    mockServer.server.close();
+    await mockServer.connected;
+    mockServer.close();
     expect(configuredServer.sockets.size).toEqual(1);
 });
 
 test("Joining a mob", async () => {
-    const mockServer = new MockServer(wssUrl);
-    const configuredServer = MobServer.configure(mockServer.server);
+    const mockServer = new WS(wssUrl);
+    const configuredServer = MobServer.configure(mockServer);
     const client1 = new WebSocket(wssUrl);
-    await mockServer.server.connected;
+    await mockServer.connected;
     client1.send(JSON.stringify({ action: "join", mob: "arrested-egg" }));
-    mockServer.server.close();
+    mockServer.close();
     expect(configuredServer.mob("arrested-egg").length).toEqual(1);
 });
 
