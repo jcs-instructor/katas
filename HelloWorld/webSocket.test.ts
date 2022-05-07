@@ -6,10 +6,11 @@ const wssUrl = "wss://localhost:1234";
 
 
 test("New mob server has zero websockets connected", async () => {
-    const mockServer = new MockServer(wssUrl);
-    const configuredServer = MobServer.configure(mockServer.server);
+    // const mockServer = new MockServer(wssUrl);
+    const mockSocketServer = new WS(wssUrl);
+    const configuredServer = MobServer.configure(mockSocketServer);
     expect(configuredServer.sockets.size).toEqual(0);
-    mockServer.server.close();
+    mockSocketServer.server.close();
 });
 
 
@@ -28,7 +29,6 @@ test("Joining a mob", async () => {
     const client1 = new WebSocket(wssUrl);
     await mockServer.server.connected;
     client1.send(JSON.stringify({ action: "join", mob: "arrested-egg" }));
-    console.log("debug4", configuredServer.mobs);
     mockServer.server.close();
     expect(configuredServer.mob("arrested-egg").length).toEqual(1);
 });
@@ -123,6 +123,5 @@ test("example test that mock server sends JSON messages to connected clients", a
     };
 
     server.send({ message: "hello everyone" });
-    console.log("debug", messages.client1, "xxx", messages.client1[0])
     expect(JSON.parse(messages.client1[0])).toEqual({ "message": "hello everyone" });
 });

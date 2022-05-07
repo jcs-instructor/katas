@@ -9,7 +9,6 @@ export class MobServer {
 
     mob(mobName: string) {
         const retValue = this._mobs.get("arrested-egg");
-        console.log('debug 5', this._mobs, "xxx", retValue);
         return retValue;
     }
 
