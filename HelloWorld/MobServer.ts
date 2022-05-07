@@ -16,7 +16,7 @@ export class MobServer {
         const mobServer = new MobServer();
         // server.on("connection", (conn) => mobServer.mobs.set(conn, { mobName: "arrested-egg" }));
         server.on("connection", (conn) => mobServer.mobs.set("arrested-egg", [conn]));
-        server.on("connection", (conn) => mobServer.sockets.set(conn, { mobName: "arrested-egg" }));
+        server.on("connection", (conn) => mobServer.sockets.set(conn, { status: "connected" }));
         return mobServer;
     };
 
