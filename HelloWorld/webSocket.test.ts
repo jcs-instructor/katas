@@ -1,5 +1,6 @@
 import WS from 'jest-websocket-mock';
 import { MobServer } from './MobServer';
+import { MobTimer } from './mobTimer';
 const wssUrl = "wss://localhost:1234";
 
 
@@ -27,6 +28,26 @@ test("Joining a mob", async () => {
     const client1 = new WebSocket(wssUrl);
     await mockWSS.connected;
     client1.send(JSON.stringify({ action: "join", mob: "arrested-egg" }));
+    mockWSS.close();
+    expect(configuredServer.mob("arrested-egg").length).toEqual(1);
+});
+
+test("Send state", async () => {
+    const mockWSS = new WS(wssUrl);
+    const mobTimer = new MobTimer("arrested-egg");
+    const mobTimer2 = new MobTimer("second-mob");
+    const configuredServer = MobServer.configure(mockWSS);
+    const client1 = new WebSocket(wssUrl);
+    const messages = [];
+    await mockWSS.connected;
+    client1.send(JSON.stringify({ action: "join", mob: "arrested-egg" }));
+    client1.onmessage = (e) => {
+        messages.push(e.data);
+    };
+    mobTimer.durationMinutes = 8;
+    mobTimer2.durationMinutes = 7;
+    const mobState = JSON.parse(messages[1]);
+    expect(mobState).toEqual(mobTimer.state);
     mockWSS.close();
     expect(configuredServer.mob("arrested-egg").length).toEqual(1);
 });
