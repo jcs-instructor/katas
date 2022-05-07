@@ -13,27 +13,27 @@ test("New mob server has zero websockets connected", async () => {
 
 
 test("New mob server has one websocket connected", async () => {
-    const mockServer = new WS(wssUrl);
-    const configuredServer = MobServer.configure(mockServer);
+    const mockWSS = new WS(wssUrl);
+    const configuredServer = MobServer.configure(mockWSS);
     new WebSocket(wssUrl);
-    await mockServer.connected;
-    mockServer.close();
+    await mockWSS.connected;
+    mockWSS.close();
     expect(configuredServer.sockets.size).toEqual(1);
 });
 
 test("Joining a mob", async () => {
-    const mockServer = new WS(wssUrl);
-    const configuredServer = MobServer.configure(mockServer);
+    const mockWSS = new WS(wssUrl);
+    const configuredServer = MobServer.configure(mockWSS);
     const client1 = new WebSocket(wssUrl);
-    await mockServer.connected;
+    await mockWSS.connected;
     client1.send(JSON.stringify({ action: "join", mob: "arrested-egg" }));
-    mockServer.close();
+    mockWSS.close();
     expect(configuredServer.mob("arrested-egg").length).toEqual(1);
 });
 
 
 // test("New mob server has one websocket when websocket opened", async () => {
-//     const server = new MockServer(wssUrl);
+//     const server = new mockWSS(wssUrl);
 //     const serverInspector = MobServer.configure(server);
 //     const client1 = new WebSocket(wssUrl);
 //     await server.connected;
