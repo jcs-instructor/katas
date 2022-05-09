@@ -1,56 +1,113 @@
 import WS from 'jest-websocket-mock';
-import { MobServer } from './MobServer';
+import { isExportDeclaration } from 'typescript';
+import { MobServer } from './mobServer';
 import { MobTimer } from './mobTimer';
 const wssUrl = "wss://localhost:1234";
 
 
-
-test("New mob server has zero websockets connected", async () => {
+// Exposing MobServer.mobs to make testing easier
+// Messages received by clients is what is critical
+// MobServer.mobs will be a HashTable { "mobName": { mobTimer, connections}}
+test("New mob server can be initiated", async () => {
     const mockSocketServer = new WS(wssUrl);
-    const configuredServer = MobServer.configure(mockSocketServer);
-    expect(configuredServer.sockets.size).toEqual(0);
-    mockSocketServer.server.close();
+    const mobServer = MobServer.createMobServer(mockSocketServer);
+    mockSocketServer.close();
+    expect(mobServer).not.toBeNull();
+    expect(mobServer).toBeInstanceOf(MobServer);
 });
 
 
-test("New mob server has one websocket connected", async () => {
+test("First user joining a mob creates a mob timer", async () => {
     const mockWSS = new WS(wssUrl);
-    const configuredServer = MobServer.configure(mockWSS);
-    new WebSocket(wssUrl);
-    await mockWSS.connected;
+    const mobServer = MobServer.createMobServer(mockWSS);
+
+    const { client, messages } = await setupClient(mockWSS);
+    client.send(JSON.stringify({ action: "join", mobName: "arrested-egg" }));
+    const arrestedTimer = mobServer.getMobTimer("arrested-egg");
+    expect(arrestedTimer.state).toEqual(new MobTimer().state);
     mockWSS.close();
-    expect(configuredServer.sockets.size).toEqual(1);
 });
 
-test("Joining a mob", async () => {
+test("First user joining a mob, expect user is associated with the mob", async () => {
     const mockWSS = new WS(wssUrl);
-    const configuredServer = MobServer.configure(mockWSS);
-    const client1 = new WebSocket(wssUrl);
-    await mockWSS.connected;
-    client1.send(JSON.stringify({ action: "join", mob: "arrested-egg" }));
+    const mobServer = MobServer.createMobServer(mockWSS);
+
+    const { client, messages } = await setupClient(mockWSS);
+    client.send(JSON.stringify({ action: "join", mobName: "arrested-egg" }));
     mockWSS.close();
-    expect(configuredServer.mob("arrested-egg").length).toEqual(1);
+    const arrestedTimer = mobServer.getMobTimer("arrested-egg");
+    expect(arrestedTimer.state).toEqual(new MobTimer().state);
+
+    const arrestedConnections = mobServer.getSockets("arrested-egg");
+    expect(arrestedConnections.length).toEqual(1);
+    expect(arrestedConnections.includes(client)).toEqual(true);
+
+    const clientMessage = JSON.parse(messages[0]);
+    expect(message).toEqual(arrestedTimer.state);
 });
 
-test("Send state", async () => {
-    const mockWSS = new WS(wssUrl);
-    const mobTimer = new MobTimer("arrested-egg");
-    const mobTimer2 = new MobTimer("second-mob");
-    const configuredServer = MobServer.configure(mockWSS);
-    const client1 = new WebSocket(wssUrl);
-    const messages = [];
-    await mockWSS.connected;
-    client1.send(JSON.stringify({ action: "join", mob: "arrested-egg" }));
-    client1.onmessage = (e) => {
-        messages.push(e.data);
-    };
-    mobTimer.durationMinutes = 8;
-    mobTimer2.durationMinutes = 7;
-    const mobState = JSON.parse(messages[1]);
-    expect(mobState).toEqual(mobTimer.state);
-    mockWSS.close();
-    expect(configuredServer.mob("arrested-egg").length).toEqual(1);
-});
+// test("Second person joins a mob, both sockets associated with mob", async () => {
+//     const mockWSS = new WS(wssUrl);
+//     const mobServer = MobServer.createMobServer(mockWSS);
+
+//     const { client: client1 } = await setupClient(mockWSS);
+//     const { client: client2 } = await setupClient(mockWSS);
+//     client1.send(JSON.stringify({ action: "join", mobName: "arrested-egg" }));
+//     client2.send(JSON.stringify({ action: "join", mobName: "arrested-egg" }));
+//     mockWSS.close();
+//     const sockets = mobServer.getSockets("arrested-egg");
+//     expect(sockets.includes(client1)).toEqual(true);
+//     expect(sockets.includes(client2)).toEqual(true);
+//     expect(mobServer.getSocketMobName(client1)).toEqual("arrested-egg");
+//     expect(mobServer.getSocketMobName(client2)).toEqual("arrested-egg");
+// });
+
+// test("Changing state", async () => {
+//     const mockWSS = new WS(wssUrl);
+//     const mobServer = MobServer.createMockServer(mockWSS);
+//     const { client, messages } = await setupClient(mockWSS);
+//     client.send(JSON.stringify({ action: "join", mobName: "arrested-egg" }));
+//     client.send(JSON.stringify({ action: "data", data: { durationMinutes: 32 } }))
+//     mockWSS.close();
+
+//     const arrested2Mob = mobServer.getMobTimer("arrested-egg2");
+//     const expectedMob = { ...new MobTimer, durationMinutes: 32 };
+
+//     expect(arrested2Mob.mobTimer).toEqual(expectedMob);
+
+//     const message = JSON.parse(messages[messages.length - 1]);
+//     expect(message).toEqual(expectedMob);
+// });
+
+// test("Change state of two mobs", async () => {
+//     const mockWSS = new WS(wssUrl);
+//     const mobServer = MobServer.createMobServer(mockWSS);
+
+//     const { client: arrestedClient, messages: arrestedMessages } = await setupClient(mockWSS);
+//     arrestedClient.send(JSON.stringify({ action: "data", data: { durationMinutes: 1 } }))
+
+//     const { client: boringClient, messages: boringMessages } = await setupClient(mockWSS);
+
+//     arrestedClient.send(JSON.stringify({ action: "join", mobName: "arrested-egg3" }));
+//     arrestedClient.send(JSON.stringify({ action: "data", data: { durationMinutes: 1 } }))
+
+//     boringClient.send(JSON.stringify({ action: "join", mobName: "boring" }));
+//     boringClient.send(JSON.stringify({ action: "data", data: { durationMinutes: 2 } }))
+
+//     mockWSS.close();
+
+//     const arrestedMob = mobServer.getMobTimer("arrested-egg");
+//     const expectedArrestedMob = { ...new MobTimer(), durationMinutes: 1 };
+//     const boringMob = mobServer.getMobTimer("boring");
+//     const expectedBoringMob = { ...new MobTimer(), durationMinutes: 2 };
+//     expect(arrestedMob).toEqual(expectedArrestedMob);
+//     expect(boringMob).toEqual(expectedBoringMob);
+
+//     const arrestedMessage = JSON.parse(arrestedMessages[arrestedMessages.length - 1]);
+//     const boringMessage = JSON.parse(boringMessages[boringMessages.length - 1]);
+//     expect(arrestedMessage).toEqual(expectedArrestedMob);
+//     expect(boringMessage).toEqual(expectedBoringMob);
+// });
 
 
 // test("New mob server has one websocket when websocket opened", async () => {
@@ -144,3 +201,13 @@ test("example test that mock server sends JSON messages to connected clients", a
     server.send({ message: "hello everyone" });
     expect(JSON.parse(messages.client1[0])).toEqual({ "message": "hello everyone" });
 });
+
+async function setupClient(mockWSS: WS) {
+    const messages = [];
+    const client = new WebSocket(wssUrl);
+    await mockWSS.connected;
+    client.onmessage = (e) => {
+        messages.push(e.data);
+    };
+    return { client, messages };
+}
