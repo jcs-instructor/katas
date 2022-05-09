@@ -2,50 +2,42 @@ import WS from 'jest-websocket-mock';
 import { MobTimer } from './mobTimer';
 
 export class MobServer {
-
-    getSockets(mobName: string) {
-        return this._mobs.get(mobName).sockets;
+    static getMobTimer(mobName: string) {
+        return MobServer._mobs.get(mobName).mobTimer;
     }
 
-    getSocketMobName(socket: WebSocket): any {
-        return this._sockets.get(socket).mobName;
-    }
 
-    private _mobs = new Map<string, { mobTimer: MobTimer, sockets: WebSocket[] }>();
-    private _sockets = new Map<WebSocket, { mobName: string }>();
-    processMessage(socket: WebSocket, msg: string) {
-        console.log('debug processing', msg);
+    private static _mobs = new Map<string, { mobTimer: MobTimer, sockets: WebSocket[] }>();
+    private static _sockets = new Map<WebSocket, { mobName: string }>();
+    processMessage(server, socket: WebSocket, msg: string) {
         const parsedMessage: { mobName: string, action: string } = JSON.parse(msg);
         const mobName = parsedMessage.mobName;
-        const mobs = this._mobs;
+        const mobs = server.mobs;
         if (parsedMessage["action"] === "join") {
-            console.log("debug 1");
             const mob = mobs.get(mobName);
+            console.log("debug process b mobs", server.mobs);
             if (mobs.get(mobName) === undefined) {
-                mobs.set(parsedMessage["mobName"], { mobTimer: new MobTimer(), sockets: [socket] });
-                console.log("debug 2", mobs, this._mobs, this._mobs.get(parsedMessage["mobName"]));
-            } else {
-                mob.sockets.push(socket);
+                mobs.set(parsedMessage["mobName"], { mobTimer: new MobTimer() });
             }
+            console.log("debug process c mobs", server.mobs);
         }
     }
 
 
-    getMobTimer(mobName: string) {
-        console.log("debug 3", this._mobs);
-        return this._mobs.get(mobName).mobTimer;
-    }
 
-
-
+    constructor() {
+        console.log("Debug constructing");
+    };
     static createMobServer = (server): MobServer => {
         const mobServer = new MobServer();
         // server.on("connection", (conn) => mobSerr.mobs.set(conn, { mobName: "arrested-egg" }));
         server.on("connection", (socket) => {
             console.log("debugging connection");
+            if (!server.mobs) {
+                server.mobs = new Map();
+            }
             socket.on("message", (msg: string) => {
-                console.log('debug processing message');
-                mobServer.processMessage(socket, msg)
+                mobServer.processMessage(server, socket, msg);
             });
 
         });
