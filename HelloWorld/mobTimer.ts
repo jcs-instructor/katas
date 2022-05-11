@@ -1,6 +1,5 @@
 import { TimeUtil } from "./timeUtil";
 
-
 export enum Status {
   Ready = "READY",
   Running = "RUNNING",
@@ -16,7 +15,6 @@ export class MobTimer {
   private _whenPausedInSeconds: number;
   private _nowInSecondsFunc = TimeUtil.getNowInSeconds;
   private _previouslyAccumulatedElapsedSeconds = 0;
-
 
   start() {
     this._status = Status.Running;
@@ -53,7 +51,7 @@ export class MobTimer {
     return this._status;
   }
 
-  public get secondsRemainingString(): any {
+  public get secondsRemainingString(): string {
     return TimeUtil.getTimeString(this.secondsRemaining);
   }
 

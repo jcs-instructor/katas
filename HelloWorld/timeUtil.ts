@@ -1,11 +1,11 @@
 export class TimeUtil {
   
-  static getNowInSeconds() {
+  static getNowInSeconds(): number {
     const currentMilliseconds = new Date().getTime();
     return TimeUtil.millisecondsToSeconds(currentMilliseconds); 
   }
 
-  static millisecondsToSeconds(milliseconds: number) {
+  static millisecondsToSeconds(milliseconds: number): number {
     return milliseconds / 1000;
   }
   
@@ -23,7 +23,7 @@ export class TimeUtil {
     return minutesPart.toString().padStart(2, "0");
   }
   
-  static getSecondsPart(seconds: number) {
+  static getSecondsPart(seconds: number): string {
     const secondsPart = (seconds % 60);
     return secondsPart.toString().padStart(2, "0");
   }
