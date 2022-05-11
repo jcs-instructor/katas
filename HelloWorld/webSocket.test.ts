@@ -267,18 +267,17 @@ test.only("example test that mock server sends messages to connected clients", a
 
     const messages = { client1: [], client2: [] };
     client1.onmessage = async (e) => {
-        if (e.data === "close") {
+        if (e.data === "Received close") {
             client1.close();
         }
         messages.client1.push(e.data);
-        client1.close();
     };
     client2.onmessage = (e) => {
         messages.client2.push(e.data);
     };
     client1.send("abc");
+    client1.send("close");
     console.log("client1 id");
-    await client1.close();
     await waitForSocketState(client1);
     expect(messages.client1.includes("Received abc")).toEqual(true);
     // expect(client1).toReceiveMessage("Received abc");
