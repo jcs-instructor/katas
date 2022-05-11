@@ -10,29 +10,58 @@ afterEach(() => {
 // Exposing MobServer.mobs to make testing easier
 // Messages received by clients is what is critical
 // MobServer.mobs will be a HashTable { "mobName": { mobTimer, connections}}
-test("New mob server can be initiated", async () => {
-    const mockSocketServer = new WS(wssUrl);
-    const mobServer = MobServer.createMobServer(mockSocketServer);
-    mockSocketServer.close();
-    expect(mobServer).not.toBeNull();
-    expect(mobServer).toBeInstanceOf(MobServer);
-});
+// test("New mob server can be initiated", async () => {
+//     const mockSocketServer = new WS(wssUrl);
+
+//     const mobServer = MobServer.createMobServer(mockSocketServer);
+//     mockSocketServer.close();
+//     expect(mobServer).not.toBeNull();
+//     expect(mobServer).toBeInstanceOf(MobServer);
+// });
+
+// test("Can send messages", async () => {
+//     const mockWSS = new WS(wssUrl);
+//     const mobServer = MobServer.createMobServer(mockWSS);
+//     const messages2 = [];
+
+//     const { client, messages } = await setupClient(mockWSS);
+//     client.onmessage = (e) => {
+//         messages2.push(e.data);
+//         console.log("debug pushed messages directly", messages2);
+//     };
+//     client.send(JSON.stringify({ action: "join", mobName: "arrested-egg" }));
+//     console.log("debug MobServer mobs", MobServer._mobs);
+//     client.send(JSON.stringify({ action: "join", mobName: "hippo" }));
+//     console.log('debug mock mobs', mockWSS.mobs);
+//     console.log("debug pushed messages final", messages, "xx", messages2);
+//     const parsedMessage = JSON.parse(messages[0]);
+//     const arrestedTimer = MobServer.getMobTimer("arrested-egg");
+//     expect(parsedMessage).toEqual(new MobTimer().state);
+//     mockWSS.close();
+// });
 
 
 
-test("First user joins a mob is added to the mob", async () => {
-    const mockWSS = new WS(wssUrl);
-    const mobServer = MobServer.createMobServer(mockWSS);
+// test("First user joins a mob is added to the mob", async () => {
+//     const mockWSS = new WS(wssUrl);
+//     const mobServer = MobServer.createMobServer(mockWSS);
+//     const messages2 = [];
 
-    const { client, messages } = await setupClient(mockWSS);
-    client.send(JSON.stringify({ action: "join", mobName: "arrested-egg" }));
-    client.send(JSON.stringify({ action: "join", mobName: "hippo" }));
-    console.log('debug mock mobs', mockWSS.mobs);
-    const arrestedTimer = MobServer.getMobTimer("arrested-egg");
-    const parsedMessage = JSON.parse(messages[0])
-    expect(parsedMessage).toEqual(new MobTimer().state);
-    mockWSS.close();
-});
+//     const { client, messages } = await setupClient(mockWSS);
+//     client.onmessage = (e) => {
+//         messages2.push(e.data);
+//         console.log("debug pushed messages directly", messages2);
+//     };
+//     client.send(JSON.stringify({ action: "join", mobName: "arrested-egg" }));
+//     console.log("debug MobServer mobs", MobServer._mobs);
+//     client.send(JSON.stringify({ action: "join", mobName: "hippo" }));
+//     console.log('debug mock mobs', mockWSS.mobs);
+//     console.log("debug pushed messages final", messages, "xx", messages2);
+//     const parsedMessage = JSON.parse(messages[0]);
+//     const arrestedTimer = MobServer.getMobTimer("arrested-egg");
+//     expect(parsedMessage).toEqual(new MobTimer().state);
+//     mockWSS.close();
+// });
 
 // test("First user joining a mob, expect user is associated with the mob", async () => {
 //     const mockWSS = new WS(wssUrl);
@@ -166,25 +195,94 @@ test("First user joins a mob is added to the mob", async () => {
 
 // copied from https://www.npmjs.com/package/jest-websocket-mock
 test("example test that mock server sends messages to connected clients", async () => {
+    console.log("debug a");
+    WS.clean();
+    console.log("debug b");
     const server = new WS("ws://localhost:1234");
+    server.on("connection", (socket) => {
+        socket.on("message", async msg => {
+            console.log("sending message to socket");
+            await socket.send("Received " + msg);
+        }
+        );
+    });
+    // expect(messages).toEqual({
+    //     client1: ["hello everyone"],
+    //     client2: ["hello everyone"],
+    // });
+    console.log("debug c");
+    const client1 = new WebSocket("ws://localhost:1234");
+    console.log("debug d");
+    await server.connected;
+    const client2 = new WebSocket("ws://localhost:1234");
+    await server.connected;
+    const messages = { client1: [], client2: [] };
+    client1.onmessage = (e) => {
+        console.log("sending client 1", e.data)
+        messages.client1.push(e.data);
+    };
+    client2.onmessage = (e) => {
+        messages.client2.push(e.data);
+    };
+    console.log("debug e");
+    await client1.send(JSON.stringify({ action: "verify", message: "hello 1" }));
+    console.log("debug f");
+    server.send("hello everyone");
+    console.log("debug g");
+    console.log('debug received 2', messages.client1);
+
+
+
+});
+
+
+
+
+
+function waitForSocketState(socket) {
+    return new Promise<void>(function (resolve) {
+        setTimeout(function () {
+            console.log('here');
+            if (socket.readyState === socket.CLOSED) {
+                resolve();
+            } else {
+                waitForSocketState(socket).then(resolve);
+            }
+        }, 5);
+    });
+};
+
+test.only("example test that mock server sends messages to connected clients", async () => {
+    const server = new WS("ws://localhost:1234");
+    server.on("connection", (socket) => {
+        socket.on("message", async msg => {
+            socket.send("Received " + msg);
+        }
+        );
+    });
     const client1 = new WebSocket("ws://localhost:1234");
     await server.connected;
     const client2 = new WebSocket("ws://localhost:1234");
     await server.connected;
 
     const messages = { client1: [], client2: [] };
-    client1.onmessage = (e) => {
+    client1.onmessage = async (e) => {
+        if (e.data === "close") {
+            client1.close();
+        }
         messages.client1.push(e.data);
+        client1.close();
     };
     client2.onmessage = (e) => {
         messages.client2.push(e.data);
     };
+    client1.send("abc");
+    console.log("client1 id");
+    await client1.close();
+    await waitForSocketState(client1);
+    expect(messages.client1.includes("Received abc")).toEqual(true);
+    // expect(client1).toReceiveMessage("Received abc");
 
-    server.send("hello everyone");
-    expect(messages).toEqual({
-        client1: ["hello everyone"],
-        client2: ["hello everyone"],
-    });
 });
 
 // based on previous test case
@@ -214,6 +312,7 @@ async function setupClient(mockWSS: WS) {
     await mockWSS.connected;
     client.onmessage = (e) => {
         messages.push(e.data);
+        console.log("debug pushed messages", messages);
     };
     return { client, messages };
-}
+};

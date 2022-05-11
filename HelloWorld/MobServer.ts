@@ -7,7 +7,7 @@ export class MobServer {
     }
 
 
-    private static _mobs = new Map<string, { mobTimer: MobTimer, sockets: WebSocket[] }>();
+    static _mobs = new Map<string, { mobTimer: MobTimer, sockets: WebSocket[] }>();
     private static _sockets = new Map<WebSocket, { mobName: string }>();
     processMessage(server, socket: WebSocket, msg: string) {
         const parsedMessage: { mobName: string, action: string } = JSON.parse(msg);
@@ -15,11 +15,10 @@ export class MobServer {
         const mobs = server.mobs;
         if (parsedMessage["action"] === "join") {
             const mob = mobs.get(mobName);
-            console.log("debug process b mobs", server.mobs);
             if (mobs.get(mobName) === undefined) {
                 mobs.set(parsedMessage["mobName"], { mobTimer: new MobTimer() });
             }
-            console.log("debug process c mobs", server.mobs);
+            socket.send(mobs.get(mobName));
         }
     }
 
@@ -38,6 +37,8 @@ export class MobServer {
             }
             socket.on("message", (msg: string) => {
                 mobServer.processMessage(server, socket, msg);
+                MobServer._mobs = server.mobs;
+                console.log("debug setting mob server", MobServer._mobs);
             });
 
         });
