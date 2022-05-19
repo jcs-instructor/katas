@@ -1,5 +1,6 @@
 import { MobTimer } from "./mobTimer";
 import { Server, WebSocket } from 'ws'
+import { JoinRequest } from "./joinRequest";
 
 export class MobServer {
   
@@ -24,17 +25,28 @@ export class MobServer {
     });    
   }
 
+
   private static processMessage(parsedMessage: any, mobTimer: MobTimer, socket: WebSocket, wss: Server) {
+    
     switch (parsedMessage.action){
-       case "join": {
+      case "join": {        
         const mobName = parsedMessage.mobName;
         mobTimer = MobServer.getOrRegisterMob(mobTimer, mobName);
-        socket.mobName = mobName;
+        socket.mobName = mobName;     
         break;
-       }
-       case "update": {        
+       }       
+      case "update": {        
         mobTimer.durationMinutes = parsedMessage.durationMinutes || mobTimer.durationMinutes;
         break;
+       }
+       default: {
+        const request: JoinRequest = parsedMessage;
+        // if (parsedMessage as JoinRequest instanceof JoinRequest) {
+        if (request.mobName) {
+          const mobName = parsedMessage.mobName;
+          mobTimer = MobServer.getOrRegisterMob(mobTimer, mobName);
+          socket.mobName = mobName;      
+        }    
        }
     }
 
@@ -42,6 +54,10 @@ export class MobServer {
     return mobTimer;
   }
 
+  private static toJoinRequest(json: string): JoinRequest {
+    return JSON.parse(json);
+  }
+  
   private static getOrRegisterMob(mobTimer: MobTimer, mobName: string) {
     mobTimer = MobServer._mobs.get(mobName);
     if (!mobTimer) {

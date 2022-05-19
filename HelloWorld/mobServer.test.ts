@@ -1,4 +1,5 @@
 import WS from 'jest-websocket-mock';
+import { JoinRequest } from './joinRequest';
 import { MobServer } from './mobServer';
 import { MobTimer } from './mobTimer';
 
@@ -22,7 +23,6 @@ test("Test can reset mob server", async () => {
     expect(parsedMessage.durationMinutes).toEqual(32);     
 });
 
-
 test("When mob server is created, when socket joins mob a new mob timer is returned", async () => {
     // Set up server
     const mockWSS = new WS(wssUrl).server;
@@ -34,6 +34,22 @@ test("When mob server is created, when socket joins mob a new mob timer is retur
     // Socket sends joins message
     socket.send(JSON.stringify({ action: "join", mobName: "awesome-team" }));    
     await waitForSocketToClose(socket);
+    const parsedMessage = JSON.parse(messagesReceivedBySocket[0]);
+    expect(parsedMessage).toEqual(new MobTimer().state);     
+});
+
+test("ALTERNATIVE: When socket joins mob a new mob timer is returned", async () => {
+    // Set up server
+    const mockWSS = new WS(wssUrl).server;
+    MobServer.createMobServer(mockWSS);
+
+    // Set up socket
+    const { socket, messagesReceivedBySocket } = await setupSocket(mockWSS);
+
+    // Socket sends joins message
+    console.log(new JoinRequest("awesome-mob"));
+    socket.send(JSON.stringify(new JoinRequest("abc")));    
+        await waitForSocketToClose(socket);
     const parsedMessage = JSON.parse(messagesReceivedBySocket[0]);
     expect(parsedMessage).toEqual(new MobTimer().state);     
 });
