@@ -1,6 +1,6 @@
 import * as http from "http";
 import WebSocket, { Server } from "ws";
-import { MobWebSocket } from "./mobWebSocket";
+import { MobWebSocket } from "./mobClient";
 import { MobTimer } from "./mobTimer";
 import { TimeUtil as TimeUtils } from "./timeUtils";
 import { Status } from "./status";

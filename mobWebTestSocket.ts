@@ -1,4 +1,4 @@
-import { MobWebSocket, WebSocketInterface } from "./mobWebSocket";
+import { MobWebSocket, WebSocketInterface } from "./mobClient";
 import { waitForSocketState } from "./testUtils";
 import { joinRequest, MobTimerRequest } from "./mobTimerRequests";
 import { MobTimerResponse } from "./mobTimerResponse";
